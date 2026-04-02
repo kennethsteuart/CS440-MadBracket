@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 
 
 # Load the local system for testing 
-# load_dotenv()
+load_dotenv()
 
 # This is a flask function which will be used later
 # def get_connection():

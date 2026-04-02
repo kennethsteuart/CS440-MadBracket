@@ -13,7 +13,7 @@ const conferences = [
 // Placeholder teams for UI
 const teamsByConference: Record<string, string[]> = {
 	"SEC (Southeastern Conference)": ["Alabama", "Tennessee", "Kentucky"],
-	ACC: ["Duke", "UNC", "Virginia"],
+	ACC: ["Duke", "UNC", "Virginia"],   // <--- This is anohter section that will be replaced
 	"Big 10": ["Purdue", "Michigan State", "Illinois"],
 	"Big 12": ["Kansas", "Baylor", "Texas"],
 	"Big East": ["UConn", "Marquette", "Creighton"],
@@ -63,7 +63,7 @@ export default function StatsPage() {
 			<button
 				className="px-6 py-3 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition mb-6"
 				disabled={!team}
-				onClick={() => alert("Show stats placeholder. Backend coming soon!")}
+				onClick={() => alert("Show stats placeholder. Backend coming soon!")} // <------ This is a line that will need to change
 			>
 				Show Stats
 			</button>
