@@ -44,54 +44,72 @@ except mysql.connector.Error as err:
 else:
         
         #Create the cursors hold the database connection 
-        coachCur = conn.cursor()
-        teamCur = conn.cursor()
-       # statCur = conn.cursor()
-        conferenceCur = conn.cursor()
+        cursor = conn.cursor()
 
         #Create the coach/team/stat/conference tables 
+
+        conferenceCreate = (
+            "CREATE TABLE IF NOT EXISTS Conference ("
+            "conference_id SMALLINT AUTO_INCREMENT,"
+            "conference_name VARCHAR(50) NOT NULL,"
+            "region VARCHAR(50),"
+            "founded_year SMALLINT,"
+            "commissioner VARCHAR(50),"
+            "num_teams SMALLINT,"
+            "PRIMARY KEY (conference_id)"
+            ")")
+        
+        teamCreate = (
+                'CREATE TABLE IF NOT EXISTS Team (' 
+                'team_id SMALLINT NOT NULL,'
+                'conference_id SMALLINT NOT NULL,'
+                'team_rank SMALLINT UNSIGNED,'
+                'wins SMALLINT,'
+                'losses SMALLINT,'
+                'conference_wins SMALLINT,'
+                'conference_losses SMALLINT,'
+                'PRIMARY KEY (team_id),'
+                'FOREIGN KEY (conference_id) REFERENCES Conference(conference_id)'
+                ' ON DELETE CASCADE'
+                ')')
+
         coachCreate = (
                 'CREATE TABLE IF NOT EXISTS Coach ('
                 'coach_id SMALLINT AUTO_INCREMENT ,'
                 'team_id SMALLINT NOT NULL,'
                 'first_name VARCHAR(30),'
                 'last_name VARCHAR(30),'
-                'hire_date DATETIME,' 
-                'PRIMARY KEY(coach_id)' 
+                'hire_date DATETIME,'
+                'PRIMARY KEY (coach_id),'
+                'FOREIGN KEY (team_id) REFERENCES Team(team_id)'
+                ' ON DELETE CASCADE'
                 ')')
         
-        teamCreate = (
-                'CREATE TABLE IF NOT EXISTS Team (' 
-                'team_id SMALLINT NOT NULL,'
-                'team_rank VARCHAR(10),'
-                'wins SMALLINT,'
-                'losses SMALLINT,'
-                'conference_wins SMALLINT,'
-                'conference_losses SMALLINT,'
-                'PRIMARY KEY(team_id)'
-                ')')
+ 
+        # created this though it might be redundant since alot of the info is stored in team
+        statCreate = (
+            'CREATE TABLE IF NOT EXISTS Stat ('
+            'stat_id INT AUTO_INCREMENT,'
+            'team_id SMALLINT NOT NULL,'
+            'team_rank TINYINT UNSIGNED,'
+            'wins SMALLINT,'
+            'losses SMALLINT,'
+            'conference_wins SMALLINT,'
+            'conference_losses SMALLINT,'
+            'PRIMARY KEY (stat_id),'
+            'FOREIGN KEY (team_id) REFERENCES Team(team_id)'
+            ' ON DELETE CASCADE'
+            ')')
         
-        # statCreate = (
-             
-        # )
-
-        confernceCreate = (
-                'CREATE TABLE IF NOT EXISTS Conference(' 
-                'conference_id SMALLINT AUTO_INCREMENT ,'
-                'conference_name VARCHAR(50),' 
-                'region VARCHAR(50),' 
-                'founded_year SMALLINT,'
-                'commisioner VARCHAR(50),' 
-                'num_teams SMALLINT,'
-                'PRIMARY KEY(conference_id)'
-                ')')
 
         # Create the tables to be store 
-        coachCur.execute(coachCreate)
-        teamCur.execute(teamCreate)
-        #statCur.execute(statCreate)
-        conferenceCur.execute(confernceCreate)
-        
+        cursor.execute(conferenceCreate)
+        cursor.execute(teamCreate)
+        cursor.execute(coachCreate)
+        cursor.execute(statCreate)
+
+
+        # inserting data
 
         nateOats = ("INSERT INTO Coach"
                       "(coach_id,team_id,first_name,last_name,hire_date) "
@@ -100,9 +118,9 @@ else:
 
         # This is here to remove the itmes inside of the coach table 
         # coachCur.execute("TRUNCATE TABLE Coach")
-        coachCur.execute("SELECT * FROM Coach")
+        cursor.execute("SELECT * FROM Coach")
 
-        rows = coachCur.fetchall()
+        rows = cursor.fetchall()
         
 
         for row in rows:
@@ -111,11 +129,9 @@ else:
      
         #coachCur.execute(nateOats)
         conn.commit()
-        coachCur.close()
-        teamCur.close()
-       # statCur.close()
-        conferenceCur.close()
+       
 
+        cursor.close()
         conn.close()
         
 
