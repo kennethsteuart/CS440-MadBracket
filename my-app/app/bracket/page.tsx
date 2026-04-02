@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 type Region = {
@@ -22,6 +23,7 @@ function getInitialBracket() {
 }
 
 export default function BracketPage() {
+  const router = useRouter();
   // bracket[regionIdx][round][slot]
   const [bracket, setBracket] = useState<string[][][]>(getInitialBracket());
 
@@ -73,6 +75,8 @@ export default function BracketPage() {
   return (
     <main className="flex flex-col items-center justify-center min-h-screen p-4 bg-gradient-to-b from-purple-100 to-white">
       <h1 className="text-2xl font-bold mb-4 text-purple-800">March Madness Bracket</h1>
+            <div className="mt-8 text-gray-500 text-xs">Click a team to advance it to the next round!</div>
+
       <div className="flex flex-row w-full max-w-5xl justify-between gap-4">
         {/* Left side: East and South */}
         <div className="flex flex-col gap-6 w-1/2">
@@ -81,11 +85,18 @@ export default function BracketPage() {
         </div>
         {/* Right side: West and Midwest */}
         <div className="flex flex-col gap-6 w-1/2">
-          {renderRegion(1)}
+        {renderRegion(1)}
           {renderRegion(3)}
         </div>
       </div>
-      <div className="mt-8 text-gray-500 text-xs">Click a team to advance it to the next round!</div>
+      <button
+				className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+				onClick={() => router.push("/stats")}
+			>
+				Go to Stats
+			</button>
     </main>
   );
 }
+
+
