@@ -72,10 +72,24 @@ export default function BracketPage() {
     );
   };
 
+  // Save bracket to localStorage
+  const handleSaveBracket = () => {
+    const bracketName = prompt("Enter a name for your bracket:");
+    if (!bracketName) return;
+    const stored = JSON.parse(localStorage.getItem("madbracket_brackets") || "[]");
+    stored.push({
+      id: Date.now(),
+      name: bracketName,
+      data: JSON.stringify(bracket),
+    });
+    localStorage.setItem("madbracket_brackets", JSON.stringify(stored));
+    alert("Bracket saved!");
+  };
+
   return (
     <main className="flex flex-col items-center justify-center min-h-screen p-4 bg-gradient-to-b from-purple-100 to-white">
       <h1 className="text-2xl font-bold mb-4 text-purple-800">March Madness Bracket</h1>
-            <div className="mt-8 text-gray-500 text-xs">Click a team to advance it to the next round!</div>
+      <div className="mt-8 text-gray-500 text-xs">Click a team to advance it to the next round!</div>
 
       <div className="flex flex-row w-full max-w-5xl justify-between gap-4">
         {/* Left side: East and South */}
@@ -85,16 +99,30 @@ export default function BracketPage() {
         </div>
         {/* Right side: West and Midwest */}
         <div className="flex flex-col gap-6 w-1/2">
-        {renderRegion(1)}
+          {renderRegion(1)}
           {renderRegion(3)}
         </div>
       </div>
-      <button
-				className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-				onClick={() => router.push("/stats")}
-			>
-				Go to Stats
-			</button>
+      <div className="flex gap-4 mt-8">
+        <button
+          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+          onClick={handleSaveBracket}
+        >
+          Save Bracket
+        </button>
+        <button
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          onClick={() => router.push("/stored_brackets")}
+        >
+          Go to Stored Brackets
+        </button>
+        <button
+          className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+          onClick={() => router.push("/stats")}
+        >
+          Go to Stats
+        </button>
+      </div>
     </main>
   );
 }
