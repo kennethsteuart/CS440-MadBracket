@@ -13,7 +13,7 @@ const conferences = [
 // Placeholder teams for UI
 const teamsByConference: Record<string, string[]> = {
 	"SEC (Southeastern Conference)": ["Alabama", "Tennessee", "Kentucky"],
-	ACC: ["Duke", "UNC", "Virginia"],   // <--- This is anoer section that will be replaced
+	"ACC": ["Duke", "UNC", "Virginia"],   // <--- This is anoer section that will be replaced
 	"Big 10": ["Purdue", "Michigan State", "Illinois"],
 	"Big 12": ["Kansas", "Baylor", "Texas"],
 	"Big East": ["UConn", "Marquette", "Creighton"],
