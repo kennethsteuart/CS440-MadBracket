@@ -12,29 +12,31 @@ CREATE TABLE IF NOT EXISTS Team (
     conference_id SMALLINT,
     team_name VARCHAR(50),
     school_name VARCHAR(50),
-    conference_id SMALLINT FOREIGN KEY REFERENCES Conference(conference_id),
     city VARCHAR(50),
     state CHAR(2),
     founded_year SMALLINT,
- );
+    FOREIGN KEY (conference_id) REFERENCES Conference(conference_id)
+);
 
 
 CREATE TABLE IF NOT EXISTS Stats (
-    team_id SMALLINT AUTO_INCREMENT PRIMARY KEY FOREIGN KEY REFERENCES Team(team_id),
+    team_id SMALLINT PRIMARY KEY,
     team_rank VARCHAR(10),
     wins SMALLINT,
     losses SMALLINT,
     conference_wins SMALLINT,
-    conference_losses SMALLINT
+    conference_losses SMALLINT,
+    FOREIGN KEY (team_id) REFERENCES Team(team_id)
 );
 
 CREATE TABLE IF NOT EXISTS Coach (
     coach_id SMALLINT AUTO_INCREMENT PRIMARY KEY,
-    team_id SMALLINT FOREIGN KEY REFERENCES Team(team_id),
+    team_id SMALLINT,
     first_name VARCHAR(50),
     last_name VARCHAR(50),
     hire_date DATE,
-    salary VARCHAR(50)
+    salary VARCHAR(50),
+    FOREIGN KEY (team_id) REFERENCES Team(team_id)
 );
 
 -- below is 100% accurate
