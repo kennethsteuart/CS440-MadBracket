@@ -3,137 +3,136 @@ import mysql.connector
 from flask import *
 from mysql.connector import errorcode
 from dotenv import load_dotenv
-
-# To do is to add primary and foreign keys 
-# Insert the sample data
-# write joing queries and then eventually connect to flask
+from flask_cors import CORS
 
 
-# Load the local system for testing 
+
+###################################
+#To Do:
+#   Add Data into the tables for each team/conference/stats 
+#   
+
+###################################
+
+
+#Define the app
+app = Flask(__name__)
+CORS(app)
+
 load_dotenv()
 
-# This is a flask function which will be used later
-# def get_connection():
-#     return mysql.connector.connect(
-#         host=os.environ.get("MYSQL_HOST" | "127.0.0.1"),
-#         user=os.environ.get('MYSQL_USER'),
-#         password=os.environ.get('MYSQL_PASSWORD'),
-#         database=os.environ.get('MYSQL_DATABASE')
-#     )
-
-try: 
-    # Create the connection and pull the information from the enviornment wether local or not 
-    conn = mysql.connector.connect(
-    host=os.environ.get("MYSQL_HOST","127.0.0.1"),
-    user=os.environ.get('MYSQL_USER'),
-    password =os.environ.get('MYSQL_PASSWORD'),
-    database =os.environ.get('MYSQL_DATABASE')
+# #Establish the connnection to the batabase
+def get_connection():
+    return mysql.connector.connect(
+        host=os.environ.get("MYSQL_HOST"),
+        user=os.environ.get('MYSQL_USER'),
+        password=os.environ.get('MYSQL_PASSWORD'),
+        database=os.environ.get('MYSQL_DATABASE')
     )
 
 
-   
-# Error handling 
-except mysql.connector.Error as err: 
-        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-            print("Invalid Credentials")
-        elif err.errno ==errorcode.ER_BAD_DB_ERROR:
-            print("DB not found")
-        else:
-            print("Cannot connect to DB", err)
+# Initialize tables and insert test data
+def initialize_db():
+    conn = get_connection()
+    cursor = conn.cursor()
 
-else:
-        
-        #Create the cursors hold the database connection 
-        cursor = conn.cursor()
+    #Creates the Conference table
+    cursor.execute("CREATE TABLE IF NOT EXISTS Conference ("
+        "conference_id SMALLINT AUTO_INCREMENT,"
+        "conference_name VARCHAR(50) NOT NULL,"
+        "region VARCHAR(50),"
+        "founded_year SMALLINT,"
+        "commissioner VARCHAR(50),"
+        "num_teams SMALLINT,"
+        "PRIMARY KEY (conference_id)"
+      ")")
 
-        #Create the coach/team/stat/conference tables 
+    #Team Table
+    cursor.execute( 'CREATE TABLE IF NOT EXISTS Team (' 
+        'team_id SMALLINT NOT NULL,'
+        'conference_id SMALLINT NOT NULL,'
+        'team_rank SMALLINT UNSIGNED,'
+        'team_name VARCHAR(50) NOT NULL,'       
+        'wins SMALLINT,'
+        'losses SMALLINT,'
+        'conference_wins SMALLINT,'
+        'conference_losses SMALLINT,'
+        'PRIMARY KEY (team_id),'
+        'FOREIGN KEY (conference_id) REFERENCES Conference(conference_id)'
+        ' ON DELETE CASCADE'
+        ')')
 
-        conferenceCreate = (
-            "CREATE TABLE IF NOT EXISTS Conference ("
-            "conference_id SMALLINT AUTO_INCREMENT,"
-            "conference_name VARCHAR(50) NOT NULL,"
-            "region VARCHAR(50),"
-            "founded_year SMALLINT,"
-            "commissioner VARCHAR(50),"
-            "num_teams SMALLINT,"
-            "PRIMARY KEY (conference_id)"
-            ")")
-        
-        teamCreate = (
-                'CREATE TABLE IF NOT EXISTS Team (' 
-                'team_id SMALLINT NOT NULL,'
-                'conference_id SMALLINT NOT NULL,'
-                'team_rank SMALLINT UNSIGNED,'
-                'wins SMALLINT,'
-                'losses SMALLINT,'
-                'conference_wins SMALLINT,'
-                'conference_losses SMALLINT,'
-                'PRIMARY KEY (team_id),'
-                'FOREIGN KEY (conference_id) REFERENCES Conference(conference_id)'
-                ' ON DELETE CASCADE'
-                ')')
+    #Coach Table
+    cursor.execute( 'CREATE TABLE IF NOT EXISTS Coach ('
+        'coach_id SMALLINT AUTO_INCREMENT ,'
+        'team_id SMALLINT NOT NULL,'
+        'first_name VARCHAR(30),'
+        'last_name VARCHAR(30),'
+        'hire_date DATETIME,'
+        'PRIMARY KEY (coach_id),'
+        'FOREIGN KEY (team_id) REFERENCES Team(team_id)'
+        ' ON DELETE CASCADE'
+        ')')
 
-        coachCreate = (
-                'CREATE TABLE IF NOT EXISTS Coach ('
-                'coach_id SMALLINT AUTO_INCREMENT ,'
-                'team_id SMALLINT NOT NULL,'
-                'first_name VARCHAR(30),'
-                'last_name VARCHAR(30),'
-                'hire_date DATETIME,'
-                'PRIMARY KEY (coach_id),'
-                'FOREIGN KEY (team_id) REFERENCES Team(team_id)'
-                ' ON DELETE CASCADE'
-                ')')
-        
- 
-        # created this though it might be redundant since alot of the info is stored in team
-        statCreate = (
-            'CREATE TABLE IF NOT EXISTS Stat ('
-            'stat_id INT AUTO_INCREMENT,'
-            'team_id SMALLINT NOT NULL,'
-            'team_rank TINYINT UNSIGNED,'
-            'wins SMALLINT,'
-            'losses SMALLINT,'
-            'conference_wins SMALLINT,'
-            'conference_losses SMALLINT,'
-            'PRIMARY KEY (stat_id),'
-            'FOREIGN KEY (team_id) REFERENCES Team(team_id)'
-            ' ON DELETE CASCADE'
-            ')')
-        
-
-        # Create the tables to be store 
-        cursor.execute(conferenceCreate)
-        cursor.execute(teamCreate)
-        cursor.execute(coachCreate)
-        cursor.execute(statCreate)
+    # Created this though it might be redundant since alot of the info is stored in team    
+    cursor.execute('CREATE TABLE IF NOT EXISTS Stat ('
+        'stat_id INT AUTO_INCREMENT,'
+        'team_id SMALLINT NOT NULL,'
+        'team_rank TINYINT UNSIGNED,'
+        'wins SMALLINT,'
+        'losses SMALLINT,'
+        'conference_wins SMALLINT,'
+        'conference_losses SMALLINT,'
+        'PRIMARY KEY (stat_id),'
+        'FOREIGN KEY (team_id) REFERENCES Team(team_id)'
+        ' ON DELETE CASCADE'
+        ')')
 
 
-        # inserting data
+    conn.commit()
+    cursor.close()
+    conn.close()
 
-        nateOats = ("INSERT INTO Coach"
-                      "(coach_id,team_id,first_name,last_name,hire_date) "
-                      "VALUES (1,1,'Nate' , 'Oats' , '2019-03-27')")
-        
 
-        # This is here to remove the itmes inside of the coach table 
-        # coachCur.execute("TRUNCATE TABLE Coach")
-        cursor.execute("SELECT * FROM Coach")
+@app.route("/stats")
+def get_team_stats():
+    team_name = request.args.get("team")
+    if not team_name:
+        return jsonify({"error": "No team provided"}), 400
 
-        rows = cursor.fetchall()
-        
-
-        for row in rows:
-            print(row)
+    try:
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
 
      
-        #coachCur.execute(nateOats)
-        conn.commit()
-       
+        query = """
+            SELECT t.team_id, t.team_name, t.team_rank, t.wins, t.losses,
+                   t.conference_wins, t.conference_losses,
+                   c.conference_name
+            FROM Team t
+            JOIN Conference c ON t.conference_id = c.conference_id
+            WHERE t.team_name = %s
+        """
+        cursor.execute(query, (team_name,))
+        result = cursor.fetchone()
 
-        cursor.close()
-        conn.close()
-        
+        if not result:
+            return jsonify({"error": "Team not found"}), 404
+
+        return jsonify(result)
+
+    except mysql.connector.Error as err:
+        return jsonify({"error": str(err)}), 500
+
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
 
 
+
+if __name__ == "__main__":
+    initialize_db()
+    app.run(debug=True, host="0.0.0.0",port=5001)

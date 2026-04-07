@@ -13,7 +13,7 @@ const conferences = [
 // Placeholder teams for UI
 const teamsByConference: Record<string, string[]> = {
 	"SEC (Southeastern Conference)": ["Alabama", "Tennessee", "Kentucky"],
-	ACC: ["Duke", "UNC", "Virginia"],   // <--- This is anohter section that will be replaced
+	ACC: ["Duke", "UNC", "Virginia"],   // <--- This is anoer section that will be replaced
 	"Big 10": ["Purdue", "Michigan State", "Illinois"],
 	"Big 12": ["Kansas", "Baylor", "Texas"],
 	"Big East": ["UConn", "Marquette", "Creighton"],
@@ -22,6 +22,7 @@ const teamsByConference: Record<string, string[]> = {
 export default function StatsPage() {
 	const [conference, setConference] = useState<string>("");
 	const [team, setTeam] = useState<string>("");
+	const [stats, setStats] = useState<any>(null); 
 	const router = useRouter();
 
 	const handleConferenceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -30,6 +31,8 @@ export default function StatsPage() {
 	};
 
 	return (
+
+		
 		<main className="flex flex-col items-center justify-center min-h-screen p-8 bg-white">
 			<h1 className="text-3xl font-bold mb-6 text-black">Stats</h1>
 			<div className="mb-4 w-full max-w-xs">
@@ -63,10 +66,36 @@ export default function StatsPage() {
 			<button
 				className="px-6 py-3 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition mb-6"
 				disabled={!team}
-				onClick={() => alert("Show stats placeholder. Backend coming soon!")} // <------ This is a line that will need to change
+				onClick={async () => {
+					try {
+						const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/stats?team=${team}`);
+						if (!res.ok) {
+							const text = await res.text();
+							console.error("Server returned error:", text);
+							return;
+						}
+						const data = await res.json();
+						setStats(data); 
+					} catch (err) {
+						console.error(err);
+					}
+				}}
 			>
+			{stats && (
+				// This is the section for the stats display. This def needs some work i just added it in to see the stats
+						<div className="mt-6 p-4 border rounded w-full max-w-xs bg-gray-50 text-black">
+							<h2 className="text-xl font-semibold mb-2">{team} Stats</h2>
+							<p>Rank: {stats.team_rank}</p>
+							<p>Total Wins: {stats.wins}</p>
+							<p>Total Losses: {stats.losses}</p>
+							<p>Conference Wins: {stats.conference_wins}</p>
+							<p>Conference Losses: {stats.conference_losses}</p>
+						</div>
+			)}
 				Show Stats
 			</button>
+
+			
 			<button
 				className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
 				onClick={() => router.push("/bracket")}
