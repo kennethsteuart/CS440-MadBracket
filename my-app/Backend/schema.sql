@@ -1,3 +1,5 @@
+USE Mad_Bracket;
+
 CREATE TABLE IF NOT EXISTS Conference (
     conference_id SMALLINT AUTO_INCREMENT PRIMARY KEY,
     conference_name VARCHAR(50),
