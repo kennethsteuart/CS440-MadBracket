@@ -13,8 +13,8 @@ export default function WelcomePage() {
 				<br />
 				<p>The conferences in this application consist of:</p>
 				<ul className="list-disc list-inside mt-2 text-left">
-					<li>SEC (Southeastern Conference)</li>
-					<li>ACC</li>
+					<li>Southeastern Conference</li>
+					<li>Atlantic Coast Conference</li>
 					<li>Big 10</li>
 					<li>Big 12</li>
 					<li>Big East</li>
