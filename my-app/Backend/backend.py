@@ -7,12 +7,6 @@ from flask_cors import CORS
 
 
 
-###################################
-#To Do:
-#   Add Data into the tables for each team/conference/stats 
-#   
-
-###################################
 
 
 #Define the app
@@ -30,7 +24,6 @@ def get_connection():
         database=os.environ.get('MYSQL_DATABASE')
     )
 
-
 @app.route("/stats")
 def get_team_stats():
     team_name = request.args.get("team")
@@ -41,14 +34,16 @@ def get_team_stats():
         conn = get_connection()
         cursor = conn.cursor(dictionary=True)
 
-     
+    
+
         query = """
-            SELECT t.team_id, t.team_name, t.team_rank, t.wins, t.losses,
-                   t.conference_wins, t.conference_losses,
-                   c.conference_name
+            SELECT t.team_id, t.team_name, s.team_rank, s.wins, s.losses,
+             s.conference_wins, s.conference_losses,
+            c.conference_name
             FROM Team t
             JOIN Conference c ON t.conference_id = c.conference_id
-            WHERE t.team_name = %s
+            JOIN Stats s ON t.team_id = s.team_id
+            WHERE t.school_name = %s
         """
         cursor.execute(query, (team_name,))
         result = cursor.fetchone()
@@ -68,7 +63,6 @@ def get_team_stats():
             conn.close()
 
 
-
-
 if __name__ == "__main__":
+    #initialize_db()
     app.run(debug=True, host="0.0.0.0",port=5001)

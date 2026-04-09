@@ -78,7 +78,7 @@ export default function StatsPage() {
 				disabled={!team}
 				onClick={async () => {
 					try {
-						const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/stats?team=${team}`);
+						const res = await fetch(`http://localhost:5001/stats?team=${team}`);
 						if (!res.ok) {
 							const text = await res.text();
 							console.error("Server returned error:", text);
