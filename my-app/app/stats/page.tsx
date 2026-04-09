@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 const conferences = [
-	"SEC (Southeastern Conference)",
+	"SEC",
 	"ACC",
 	"Big 10",
 	"Big 12",
@@ -12,11 +12,21 @@ const conferences = [
 
 // Placeholder teams for UI
 const teamsByConference: Record<string, string[]> = {
-	"SEC (Southeastern Conference)": ["Alabama", "Tennessee", "Kentucky"],
-	"ACC": ["Duke", "UNC", "Virginia"],   // <--- This is anoer section that will be replaced
-	"Big 10": ["Purdue", "Michigan State", "Illinois"],
-	"Big 12": ["Kansas", "Baylor", "Texas"],
-	"Big East": ["UConn", "Marquette", "Creighton"],
+	"SEC": [
+		"Alabama", "Georgia", "LSU", "Florida", "Auburn", "Mississippi State", "Ole Miss", "Tennessee", "Missouri", "Oklahoma", "Arkansas", "Vanderbilt", "Texas", "South Carolina", "Texas A&M", "Kentucky"
+	],
+	"ACC": [
+		"Florida State", "Clemson", "Miami", "Virginia Tech", "North Carolina", "Duke", "NC State", "Virginia", "Syracuse", "California", "Louisville", "Stanford", "SMU", "Notre Dame", "Wake Forest", "Pittsburgh", "Boston College", "Georgia Tech"
+	],
+	"Big 10": [
+		"Ohio State", "Michigan", "Penn State", "Wisconsin", "Minnesota", "Iowa", "Illinois", "Oregon", "Nebraska", "Michigan State", "UCLA", "Purdue", "USC", "Rutgers", "Washington", "Indiana", "Northwestern", "Maryland"
+	],
+	"Big 12": [
+		"Arizona State", "Utah", "Kansas", "BYU", "West Virginia", "Houston", "Baylor", "Colorado", "Kansas State", "Texas Tech", "Iowa State", "Arizona", "TCU", "Cincinnati", "Oklahoma State", "UCF"
+	],
+	"Big East": [
+		"Villanova", "Georgetown", "Providence", "Creighton", "DePaul", "Marquette", "UConn", "Seton Hall", "St. Johns", "Butler", "Xavier"
+	]
 };
 
 export default function StatsPage() {
