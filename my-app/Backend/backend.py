@@ -31,69 +31,6 @@ def get_connection():
     )
 
 
-# Initialize tables and insert test data
-def initialize_db():
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    #Creates the Conference table
-    cursor.execute("CREATE TABLE IF NOT EXISTS Conference ("
-        "conference_id SMALLINT AUTO_INCREMENT,"
-        "conference_name VARCHAR(50) NOT NULL,"
-        "region VARCHAR(50),"
-        "founded_year SMALLINT,"
-        "commissioner VARCHAR(50),"
-        "num_teams SMALLINT,"
-        "PRIMARY KEY (conference_id)"
-      ")")
-
-    #Team Table
-    cursor.execute( 'CREATE TABLE IF NOT EXISTS Team (' 
-        'team_id SMALLINT NOT NULL,'
-        'conference_id SMALLINT NOT NULL,'
-        'team_rank SMALLINT UNSIGNED,'
-        'team_name VARCHAR(50) NOT NULL,'       
-        'wins SMALLINT,'
-        'losses SMALLINT,'
-        'conference_wins SMALLINT,'
-        'conference_losses SMALLINT,'
-        'PRIMARY KEY (team_id),'
-        'FOREIGN KEY (conference_id) REFERENCES Conference(conference_id)'
-        ' ON DELETE CASCADE'
-        ')')
-
-    #Coach Table
-    cursor.execute( 'CREATE TABLE IF NOT EXISTS Coach ('
-        'coach_id SMALLINT AUTO_INCREMENT ,'
-        'team_id SMALLINT NOT NULL,'
-        'first_name VARCHAR(30),'
-        'last_name VARCHAR(30),'
-        'hire_date DATETIME,'
-        'PRIMARY KEY (coach_id),'
-        'FOREIGN KEY (team_id) REFERENCES Team(team_id)'
-        ' ON DELETE CASCADE'
-        ')')
-
-    # Created this though it might be redundant since alot of the info is stored in team    
-    cursor.execute('CREATE TABLE IF NOT EXISTS Stat ('
-        'stat_id INT AUTO_INCREMENT,'
-        'team_id SMALLINT NOT NULL,'
-        'team_rank TINYINT UNSIGNED,'
-        'wins SMALLINT,'
-        'losses SMALLINT,'
-        'conference_wins SMALLINT,'
-        'conference_losses SMALLINT,'
-        'PRIMARY KEY (stat_id),'
-        'FOREIGN KEY (team_id) REFERENCES Team(team_id)'
-        ' ON DELETE CASCADE'
-        ')')
-
-
-    conn.commit()
-    cursor.close()
-    conn.close()
-
-
 @app.route("/stats")
 def get_team_stats():
     team_name = request.args.get("team")
@@ -134,5 +71,4 @@ def get_team_stats():
 
 
 if __name__ == "__main__":
-    initialize_db()
     app.run(debug=True, host="0.0.0.0",port=5001)
