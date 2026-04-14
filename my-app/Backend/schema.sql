@@ -20,7 +20,6 @@ CREATE TABLE IF NOT EXISTS Team (
     FOREIGN KEY (conference_id) REFERENCES Conference(conference_id)
 );
 
-
 CREATE TABLE IF NOT EXISTS Stats (
     team_id SMALLINT PRIMARY KEY,
     team_rank VARCHAR(10),
@@ -40,6 +39,14 @@ CREATE TABLE IF NOT EXISTS Coach (
     salary VARCHAR(50),
     FOREIGN KEY (team_id) REFERENCES Team(team_id)
 );
+
+-- Where the brackets are stored. 
+CREATE TABLE IF NOT EXISTS Bracket (
+    bracket_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100),
+    data TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);    
 
 -- below is 100% accurate
 
