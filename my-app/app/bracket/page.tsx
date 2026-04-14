@@ -178,31 +178,18 @@ export default function BracketPage() {
     // eslint-disable-next-line
   }, [bracket[0][4][0], bracket[1][4][0], bracket[2][4][0], bracket[3][4][0]]);
 
- 
-  // Save bracket to backend 
-  const [bracketName, setBracketName] = useState<string>("");
-  const handleSaveBracket = async () => {
-    try {
-      const res = await fetch(`http://localhost:5001/stored_brackets`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: bracketName,
-          data: bracket,
-        }),
-      });
-       const result = await res.json();
-
-      if (!res.ok) {
-        console.error("Error saving:", result);
-        return;
-      }
-      console.log("Saved:", result);
-    } catch (err) {
-      console.error(err);
-    }
+  // Save bracket to localStorage
+  const handleSaveBracket = () => {
+    const bracketName = prompt("Enter a name for your bracket:");
+    if (!bracketName) return;
+    const stored = JSON.parse(localStorage.getItem("madbracket_brackets") || "[]");
+    stored.push({
+      id: Date.now(),
+      name: bracketName,
+      data: JSON.stringify(bracket),
+    });
+    localStorage.setItem("madbracket_brackets", JSON.stringify(stored));
+    alert("Bracket saved!");
   };
 
   return (
@@ -224,14 +211,6 @@ export default function BracketPage() {
       {/* National rounds */}
       {renderNationalRounds()}
       <div className="flex gap-4 mt-8">
-      <input
-      // button for the bracket name
-        type="text"
-        placeholder="Enter bracket name"
-        value={bracketName}
-        onChange={(e) => setBracketName(e.target.value)}
-        className="border p-2 text-black rounded"
-        />
         <button
           className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
           onClick={handleSaveBracket}
@@ -249,6 +228,12 @@ export default function BracketPage() {
           onClick={() => router.push("/stats")}
         >
           Go to Stats
+        </button>
+        <button
+          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+          onClick={() => router.push("/coaches")}
+        >
+          Go to Coaches
         </button>
       </div>
     </main>
