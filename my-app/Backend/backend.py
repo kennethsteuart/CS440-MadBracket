@@ -1,55 +1,53 @@
 import os
 import mysql.connector
 import json
-from flask import *
-from mysql.connector import errorcode
-from dotenv import load_dotenv
+from flask import Flask, request, jsonify
 from flask_cors import CORS
+from dotenv import load_dotenv
 
-
-
-# CRUD 
-# All we need is an update and delete and this will come from the last page
-
-
-#Define the app
 app = Flask(__name__)
 CORS(app)
 
 load_dotenv()
 
-#Establish the connnection to the batabase
+# ----------------------------
+# DB CONNECTION
+# ----------------------------
 def get_connection():
     return mysql.connector.connect(
         host=os.environ.get("MYSQL_HOST"),
-        user=os.environ.get('MYSQL_USER'),
-        password=os.environ.get('MYSQL_PASSWORD'),
-        database=os.environ.get('MYSQL_DATABASE')
+        user=os.environ.get("MYSQL_USER"),
+        password=os.environ.get("MYSQL_PASSWORD"),
+        database=os.environ.get("MYSQL_DATABASE")
     )
 
-
-# Gets Information from the  stats table  -- READ IS DONE 
+# ----------------------------
+# GET TEAM STATS (UNCHANGED)
+# ----------------------------
 @app.route("/stats")
 def get_team_stats():
     team_name = request.args.get("team")
+
     if not team_name:
         return jsonify({"error": "No team provided"}), 400
+
+    conn = None
+    cursor = None
 
     try:
         conn = get_connection()
         cursor = conn.cursor(dictionary=True)
 
-    
-
         query = """
             SELECT t.team_id, t.team_name, s.team_rank, s.wins, s.losses,
-             s.conference_wins, s.conference_losses,
-            c.conference_name
+                   s.conference_wins, s.conference_losses,
+                   c.conference_name
             FROM Team t
             JOIN Conference c ON t.conference_id = c.conference_id
             JOIN Stats s ON t.team_id = s.team_id
             WHERE t.school_name = %s
         """
+
         cursor.execute(query, (team_name,))
         result = cursor.fetchone()
 
@@ -62,46 +60,147 @@ def get_team_stats():
         return jsonify({"error": str(err)}), 500
 
     finally:
-        if cursor:
+        if cursor is not None:
             cursor.close()
-        if conn:
+        if conn is not None:
             conn.close()
 
-# Stores the bracket as JSON and sends it to the database ---- CREATE IS DONE 
+# ----------------------------
+# CREATE BRACKET
+# ----------------------------
 @app.route("/stored_brackets", methods=["POST"])
-def save_bracket():
-    data = request.json
+def create_bracket():
+    conn = None
+    cursor = None
 
-    if data is None:
-        return jsonify({"error": "Invalid or missing JSON body"}), 400
+    try:
+        data = request.get_json()
 
-    name = data.get("name")
-    bracket_data = data.get("data")
+        if not data:
+            return jsonify({"error": "Invalid JSON"}), 400
 
-    if not name or not bracket_data:
-        return jsonify({"error": "Missing data"}), 400
+        name = data.get("name")
+        bracket_data = data.get("data")
+
+        if not name or bracket_data is None:
+            return jsonify({"error": "Missing name or data"}), 400
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute(
+            "INSERT INTO Bracket (name, data) VALUES (%s, %s)",
+            (name, json.dumps(bracket_data))
+        )
+
+        conn.commit()
+
+        return jsonify({"message": "Bracket created successfully"}), 201
+
+    except mysql.connector.Error as err:
+        return jsonify({"error": str(err)}), 500
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if conn is not None:
+            conn.close()
+
+# ----------------------------
+# READ ALL BRACKETS
+# ----------------------------
+@app.route("/stored_brackets", methods=["GET"])
+def get_brackets():
+    conn = None
+    cursor = None
+
+    try:
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("SELECT * FROM Bracket ORDER BY created_at DESC")
+        results = cursor.fetchall()
+
+        return jsonify(results)
+
+    except mysql.connector.Error as err:
+        return jsonify({"error": str(err)}), 500
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if conn is not None:
+            conn.close()
+
+# ----------------------------
+# UPDATE BRACKET
+# ----------------------------
+@app.route("/stored_brackets/<int:bracket_id>", methods=["PUT"])
+def update_bracket(bracket_id):
+    conn = None
+    cursor = None
+
+    try:
+        data = request.get_json()
+
+        name = data.get("name")
+        bracket_data = data.get("data")
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute(
+            "UPDATE Bracket SET name=%s, data=%s WHERE bracket_id=%s",
+            (name, json.dumps(bracket_data), bracket_id)
+        )
+
+        conn.commit()
+
+        if cursor.rowcount == 0:
+            return jsonify({"error": "Bracket not found"}), 404
+
+        return jsonify({"message": "Bracket updated"})
+
+    except mysql.connector.Error as err:
+        return jsonify({"error": str(err)}), 500
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if conn is not None:
+            conn.close()
+
+# ----------------------------
+# DELETE BRACKET
+# ----------------------------
+@app.route("/stored_brackets/<int:bracket_id>", methods=["DELETE"])
+def delete_bracket(bracket_id):
+    conn = None
+    cursor = None
 
     try:
         conn = get_connection()
         cursor = conn.cursor()
 
-        query = """
-            INSERT INTO Bracket (name, data)
-            VALUES (%s, %s)
-        """
-        cursor.execute(query, (name, json.dumps(bracket_data)))
+        cursor.execute("DELETE FROM Bracket WHERE bracket_id=%s", (bracket_id,))
         conn.commit()
 
-        return jsonify({"message": "Bracket saved!"})
+        if cursor.rowcount == 0:
+            return jsonify({"error": "Bracket not found"}), 404
 
-    except Exception as e:
-        print("Error:", e)
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"message": "Bracket deleted"})
+
+    except mysql.connector.Error as err:
+        return jsonify({"error": str(err)}), 500
 
     finally:
-        cursor.close()
-        conn.close()
+        if cursor is not None:
+            cursor.close()
+        if conn is not None:
+            conn.close()
 
-
+# ----------------------------
+# RUN SERVER
+# ----------------------------
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0",port=5001)
+    app.run(debug=True, host="0.0.0.0", port=5001)

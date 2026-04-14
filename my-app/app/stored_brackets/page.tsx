@@ -1,135 +1,217 @@
 "use client";
-import { useState, useEffect } from "react";
 
+import { useEffect, useState } from "react";
 
 type Bracket = {
 	id: number;
 	name: string;
 	data: string;
+	created_at?: string;
 };
 
 export default function StoredBracketsPage() {
 	const [brackets, setBrackets] = useState<Bracket[]>([]);
+	const [loading, setLoading] = useState(true);
+
 	const [editingId, setEditingId] = useState<number | null>(null);
 	const [editName, setEditName] = useState("");
 	const [editData, setEditData] = useState("");
 
-	// Load from localStorage on mount
-	useEffect(() => {
-		if (typeof window !== "undefined") {
-			const stored = localStorage.getItem("madbracket_brackets");
-			if (stored) {
-				setBrackets(JSON.parse(stored));
-			}
+	const [newName, setNewName] = useState("");
+	const [newData, setNewData] = useState("");
+
+	const API = "http://localhost:5001";
+
+	// ----------------------------
+	// LOAD BRACKETS (READ)
+	// ----------------------------
+	const loadBrackets = async () => {
+		try {
+			setLoading(true);
+
+			const res = await fetch(`${API}/stored_brackets`);
+			const data = await res.json();
+
+			const formatted = data.map((b: any) => ({
+				id: b.bracket_id,
+				name: b.name,
+				data: b.data,
+				created_at: b.created_at,
+			}));
+
+			setBrackets(formatted);
+		} catch (err) {
+			console.error("Failed to load brackets:", err);
+		} finally {
+			setLoading(false);
 		}
+	};
+
+	useEffect(() => {
+		loadBrackets();
 	}, []);
 
-	// Delete
-	const handleDelete = (id: number) => {
-		setBrackets((prev) => {
-			const updated = prev.filter((b) => b.id !== id);
-			if (typeof window !== "undefined") {
-				localStorage.setItem("madbracket_brackets", JSON.stringify(updated));
-			}
-			return updated;
+	// ----------------------------
+	// CREATE BRACKET
+	// ----------------------------
+	const createBracket = async () => {
+		if (!newName || !newData) return;
+
+		await fetch(`${API}/stored_brackets`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				name: newName,
+				data: newData,
+			}),
 		});
+
+		setNewName("");
+		setNewData("");
+		loadBrackets();
 	};
 
-	// Edit
-	const startEdit = (bracket: Bracket) => {
-		setEditingId(bracket.id);
-		setEditName(bracket.name);
-		setEditData(bracket.data);
-	};
-	const handleEditSave = () => {
-		setBrackets((prev) => {
-			const updated = prev.map((b) =>
-				b.id === editingId ? { ...b, name: editName, data: editData } : b
-			);
-			if (typeof window !== "undefined") {
-				localStorage.setItem("madbracket_brackets", JSON.stringify(updated));
-			}
-			return updated;
+	// ----------------------------
+	// DELETE BRACKET
+	// ----------------------------
+	const deleteBracket = async (id: number) => {
+		await fetch(`${API}/stored_brackets/${id}`, {
+			method: "DELETE",
 		});
-		setEditingId(null);
-		setEditName("");
-		setEditData("");
+
+		setBrackets((prev) => prev.filter((b) => b.id !== id));
 	};
-	const handleEditCancel = () => {
+
+	// ----------------------------
+	// START EDIT
+	// ----------------------------
+	const startEdit = (b: Bracket) => {
+		setEditingId(b.id);
+		setEditName(b.name);
+		setEditData(b.data);
+	};
+
+	// ----------------------------
+	// SAVE EDIT
+	// ----------------------------
+	const saveEdit = async () => {
+		if (!editingId) return;
+
+		await fetch(`${API}/stored_brackets/${editingId}`, {
+			method: "PUT",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				name: editName,
+				data: editData,
+			}),
+		});
+
 		setEditingId(null);
 		setEditName("");
 		setEditData("");
+		loadBrackets();
 	};
 
 	return (
-		<main className="flex flex-col items-center min-h-screen p-8 bg-gray-50">
-			<h1 className="text-2xl font-bold mb-6 text-blue-800">Stored Brackets</h1>
-			<div className="w-full max-w-2xl">
-				{brackets.length === 0 && (
-					<div className="text-gray-500 text-center">No brackets stored yet.</div>
-				)}
-				{brackets.map((bracket) => (
-					<div
-						key={bracket.id}
-						className="bg-white rounded shadow p-4 mb-4 flex flex-col gap-2"
-					>
-						{editingId === bracket.id ? (
-							<>
-								<input
-									className="w-full mb-2 p-2 border rounded"
-									value={editName}
-									onChange={(e) => setEditName(e.target.value)}
-								/>
-								<textarea
-									className="w-full mb-2 p-2 border rounded"
-									value={editData}
-									onChange={(e) => setEditData(e.target.value)}
-								/>
-								<div className="flex gap-2">
-									<button
-										className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
-										onClick={handleEditSave}
-									>
-										Save
-									</button>
-									<button
-										className="px-3 py-1 bg-gray-400 text-white rounded hover:bg-gray-500"
-										onClick={handleEditCancel}
-									>
-										Cancel
-									</button>
-								</div>
-							</>
-						) : (
-							<>
-								<div className="flex justify-between items-center">
-									<div>
-										<span className="font-semibold text-lg">{bracket.name}</span>
-									</div>
+		<main className="min-h-screen p-8 bg-gray-50 flex flex-col items-center">
+			<h1 className="text-3xl font-bold text-blue-700 mb-6">
+				Stored Brackets
+			</h1>
+
+			{/* ---------------- CREATE ---------------- */}
+			<div className="text-blue-700 font-semibold mb-2">
+				<h2 className="font-semibold mb-2">Create New Bracket</h2>
+
+				<input
+					className="w-full border p-2 mb-2"
+					placeholder="Bracket Name"
+					value={newName}
+					onChange={(e) => setNewName(e.target.value)}
+				/>
+
+				<textarea
+					className="w-full border p-2 mb-2"
+					placeholder="Bracket Data (JSON or text)"
+					value={newData}
+					onChange={(e) => setNewData(e.target.value)}
+				/>
+
+				<button
+					onClick={createBracket}
+					className="bg-blue-600 text-white px-4 py-2 rounded"
+				>
+					Save Bracket
+				</button>
+			</div>
+
+			{/* ---------------- LIST ---------------- */}
+			<div className="text-blue-700 font-semibold mb-2">
+				{loading ? (
+					<p>Loading...</p>
+				) : brackets.length === 0 ? (
+					<p className="text-gray-500">No brackets found</p>
+				) : (
+					brackets.map((b) => (
+						<div key={b.id} className="bg-white p-4 mb-4 shadow rounded">
+							{editingId === b.id ? (
+								<>
+									<input
+										className="w-full border p-2 mb-2"
+										value={editName}
+										onChange={(e) => setEditName(e.target.value)}
+									/>
+									<textarea
+										className="w-full border p-2 mb-2"
+										value={editData}
+										onChange={(e) => setEditData(e.target.value)}
+									/>
 									<div className="flex gap-2">
 										<button
-											className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-											onClick={() => startEdit(bracket)}
+											onClick={saveEdit}
+											className="bg-green-600 text-white px-3 py-1 rounded"
+										>
+											Save
+										</button>
+										<button
+											onClick={() => setEditingId(null)}
+											className="bg-gray-400 text-white px-3 py-1 rounded"
+										>
+											Cancel
+										</button>
+									</div>
+								</>
+							) : (
+								<>
+									<h3 className="font-bold text-lg">{b.name}</h3>
+									<p className="text-sm text-gray-600 break-all">
+										{b.data}
+									</p>
+
+									<div className="flex gap-2 mt-2">
+										<button
+											onClick={() => startEdit(b)}
+											className="bg-yellow-500 text-white px-3 py-1 rounded"
 										>
 											Edit
 										</button>
+
 										<button
-											className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
-											onClick={() => handleDelete(bracket.id)}
+											onClick={() => deleteBracket(b.id)}
+											className="bg-red-600 text-white px-3 py-1 rounded"
 										>
 											Delete
 										</button>
 									</div>
-								</div>
-								<div className="text-xs text-gray-600 break-all">
-									{bracket.data}
-								</div>
-							</>
-						)}
-					</div>
-				))}
+								</>
+							)}
+						</div>
+					))
+				)}
 			</div>
 		</main>
 	);
 }
-										//</button>
