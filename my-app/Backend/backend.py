@@ -199,6 +199,50 @@ def delete_bracket(bracket_id):
         if conn is not None:
             conn.close()
 
+
+# ----------------------------
+# GET COACHES
+# ----------------------------
+@app.route("/coaches", methods=["GET"])
+def get_coaches():
+    conn = None
+    cursor = None
+
+    conference = request.args.get("conference")
+    team = request.args.get("team")
+
+    try:
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        query = """
+            SELECT c.conference_name, t.school_name, t.team_name,
+                   ch.first_name, ch.last_name, ch.hire_date, ch.salary
+            FROM Coach ch
+            JOIN Team t ON ch.team_id = t.team_id
+            JOIN Conference c ON t.conference_id = c.conference_id
+            WHERE (%s IS NULL OR %s = '' OR c.conference_name = %s)
+              AND (%s IS NULL OR %s = '' OR t.school_name = %s)
+            ORDER BY c.conference_name, t.school_name
+        """
+
+        cursor.execute(
+            query,
+            (conference, conference, conference, team, team, team),
+        )
+        results = cursor.fetchall()
+
+        return jsonify(results)
+
+    except mysql.connector.Error as err:
+        return jsonify({"error": str(err)}), 500
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if conn is not None:
+            conn.close()
+
 # ----------------------------
 # RUN SERVER
 # ----------------------------
