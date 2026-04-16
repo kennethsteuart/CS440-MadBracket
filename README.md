@@ -22,6 +22,29 @@ pnpm dev
 bun dev
 ```
 
+### Database set up
+- Install MySQL
+- Create a ".env" file in the backend folder and fill it in with your own information
+    MYSQL_HOST=127.0.0.1
+    MYSQL_USER=your_username
+    MYSQL_PASSWORD=your_password
+    MYSQL_DATABASE=Mad_Bracket
+    NEXT_PUBLIC_API_URL=http://localhost:5001
+
+
+- Run the following commands with the your own credentials:
+    CREATE DATABASE Mad_Bracket;
+    mysql -u your_username -p Mad_Bracket < Backend/schema.sql
+
+
+## Backend 
+- The backend runs on http://localhost:5001
+- To run the backend follow these commands:
+    cd backend
+    pip install -r requirements.txt
+    python3 backend.py or run some command to run the file
+
+
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
