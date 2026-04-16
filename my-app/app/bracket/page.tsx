@@ -8,6 +8,12 @@ type Region = {
   teams: string[];
 };
 
+type CoachInfo = {
+  firstName: string;
+  lastName: string;
+  salary: string;
+};
+
 const regionNames = ["East", "West", "South", "Midwest"];
 const teamsPerRegion = 16;
 
@@ -62,9 +68,53 @@ function getRoundMargin(roundIdx: number) {
   return Math.pow(2, roundIdx) * 2; // was *1, now *2 for more spacing
 }
 
+function normalizeTeamName(name: string) {
+  return name.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
 export default function BracketPage() {
   const router = useRouter();
   const [bracket, setBracket] = useState<string[][][]>(getInitialBracket());
+  const [coachByTeam, setCoachByTeam] = useState<Record<string, CoachInfo>>({});
+  const [selectedTeam, setSelectedTeam] = useState<string>("");
+  const [isCoachLoading, setIsCoachLoading] = useState<boolean>(true);
+  const [coachError, setCoachError] = useState<string>("");
+
+  React.useEffect(() => {
+    const loadCoaches = async () => {
+      setIsCoachLoading(true);
+      setCoachError("");
+      try {
+        const res = await fetch("http://localhost:5001/coaches");
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(text || "Failed to load coaches");
+        }
+
+        const data = await res.json();
+        const mapped: Record<string, CoachInfo> = {};
+
+        data.forEach((row: any) => {
+          const coach = {
+            firstName: row.first_name,
+            lastName: row.last_name,
+            salary: row.salary,
+          };
+
+          mapped[normalizeTeamName(row.school_name)] = coach;
+          mapped[normalizeTeamName(row.team_name)] = coach;
+        });
+
+        setCoachByTeam(mapped);
+      } catch (err: any) {
+        setCoachError(err.message || "Unable to load coach data.");
+      } finally {
+        setIsCoachLoading(false);
+      }
+    };
+
+    loadCoaches();
+  }, []);
 
   // Advance a team to the next round (region or national)
   const handleAdvance = (regionIdx: number, round: number, slot: number) => {
@@ -76,6 +126,7 @@ export default function BracketPage() {
         );
         const team = updated[regionIdx][round][slot];
         if (!team) return prev;
+        setSelectedTeam(team);
         const nextSlot = Math.floor(slot / 2);
         if (round < 2) {
           updated[regionIdx][round + 1][nextSlot] = team;
@@ -94,6 +145,7 @@ export default function BracketPage() {
       );
       const team = updated[regionIdx][round][slot];
       if (!team) return prev;
+      setSelectedTeam(team);
       const nextSlot = Math.floor(slot / 2);
       updated[regionIdx][round + 1][nextSlot] = team;
       return updated;
@@ -205,10 +257,30 @@ export default function BracketPage() {
     }
   };
 
+  const selectedCoach = selectedTeam
+    ? coachByTeam[normalizeTeamName(selectedTeam)]
+    : undefined;
+
   return (
     <main className="flex flex-col items-center justify-center min-h-screen p-4 bg-gradient-to-b from-purple-100 to-white">
       <h1 className="text-2xl font-bold mb-4 text-black">March Madness Bracket</h1>
       <div className="mt-8 text-gray-500 text-xs">Click a team to advance it to the next round!</div>
+      <div className="mt-3 mb-4 w-full max-w-3xl bg-white border rounded p-3 text-sm text-black">
+        <div className="font-semibold mb-1">Selected Team Coach</div>
+        {!selectedTeam && <div className="text-gray-600">Click any team to view coach info.</div>}
+        {selectedTeam && isCoachLoading && <div className="text-gray-600">Loading coach data...</div>}
+        {selectedTeam && !isCoachLoading && coachError && <div className="text-red-600">{coachError}</div>}
+        {selectedTeam && !isCoachLoading && !coachError && !selectedCoach && (
+          <div className="text-gray-600">No coach data found for {selectedTeam}.</div>
+        )}
+        {selectedTeam && !isCoachLoading && !coachError && selectedCoach && (
+          <div>
+            <div>Team: {selectedTeam}</div>
+            <div>Coach: {selectedCoach.firstName} {selectedCoach.lastName}</div>
+            <div>Salary: {selectedCoach.salary}</div>
+          </div>
+        )}
+      </div>
       <div className="flex flex-row w-full max-w-5xl justify-between gap-4">
         {/* Left side: East and South */}
         <div className="flex flex-col gap-6 w-1/2">
@@ -249,6 +321,12 @@ export default function BracketPage() {
           onClick={() => router.push("/stats")}
         >
           Go to Stats
+        </button>
+        <button
+          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+          onClick={() => router.push("/coaches")}
+        >
+          Go to Coaches
         </button>
       </div>
     </main>
