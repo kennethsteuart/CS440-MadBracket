@@ -22,7 +22,7 @@ def get_connection():
     )
 
 # ----------------------------
-# GET TEAM STATS (UNCHANGED)
+# GET TEAM STATS 
 # ----------------------------
 @app.route("/stats")
 def get_team_stats():
@@ -231,6 +231,11 @@ def get_coaches():
             (conference, conference, conference, team, team, team),
         )
         results = cursor.fetchall()
+
+        # Convert hire_date to string so it's JSON serializable
+        for row in results:
+            if row.get("hire_date"):
+                row["hire_date"] = str(row["hire_date"])
 
         return jsonify(results)
 
