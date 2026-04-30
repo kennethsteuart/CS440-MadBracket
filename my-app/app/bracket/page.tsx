@@ -19,16 +19,16 @@ const teamsPerRegion = 16;
 
 const regionTeams: Record<string, string[]> = {
   East: [
-    "UConn", "Marquette", "Illinois", "Auburn", "San Diego State", "BYU", "Florida Atlantic", "Iowa State", "Washington State", "Drake", "NC State", "Yale", "Duquesne", "Morehead State", "St. John's", "Colgate"
+    "Michigan", "Arizona", "UConn", "Duke", "Houston", "Purdue", "St. Johns", "Virginia", "Florida", "Nebraska", "Tennessee", "Arkansas", "Vanderbilt", "Miami", "Wisconsin", "Illinois"
   ],
   West: [
-    "North Carolina", "Arizona", "Baylor", "Alabama", "Clemson", "Saint Mary's", "Dayton", "Mississippi State", "Michigan State", "Grand Canyon", "New Mexico", "VCU", "Vermont", "Wagner", "Long Beach State", "South Dakota State"
+    "Texas Tech", "Iowa State", "Kansas", "BYU", "Clemson", "Louisville", "Texas A&M", "Kentucky", "UCLA", "NC State", "Alabama", "Tennessee", "Florida State", "Virginia Tech", "Georgia", "Auburn"
   ],
   South: [
-    "Houston", "Duke", "Kentucky", "Texas Tech", "Wisconsin", "Florida", "TCU", "Nebraska", "Texas A&M", "Boise State", "James Madison", "Oakland", "Western Kentucky", "Samford", "Colgate", "Stetson"
+    "Oklahoma", "Texas", "Seton Hall", "SMU", "Stanford", "California", "Cincinnati", "UCF", "Wake Forest", "TCU", "West Virginia", "Colorado", "Oklahoma State", "Missouri", "Villanova", "Iowa"
   ],
   Midwest: [
-    "Purdue", "Tennessee", "Creighton", "Kansas", "Gonzaga", "South Carolina", "Texas", "Utah State", "Oregon", "NC State", "Colorado State", "McNeese State", "Akron", "Montana State", "Longwood", "Grambling State"
+    "Michigan State", "Creighton", "Marquette", "St. John's", "Ohio State", "Kansas State", "South Carolina", "Indiana", "Rutgers", "USC", "Washington", "Oregon", "Minnesota", "Notre Dame", "Pittsburgh", "Boston College"
   ]
 };
 
