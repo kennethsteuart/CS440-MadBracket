@@ -73,9 +73,9 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 | Member            | Contributions                                                                 |
 |-------------------|------------------------------------------------------------------------------|
 | Chase Horne       | Backend Setup, Get stats, stored brackets, fixed get coaches                  |
-| Rivers Steuart    | Frontend - Basis for stored_brackets page, brackets page, full welcome page, stats page |
-| Noah Gorospe      | Backend - added data into schema                                              |
-| Vicenzo Linares   | (Please specify contributions)                                                |
+| Rivers Steuart    | (Frontend) - Basis for stored_brackets page, brackets page, full welcome page, stats page (Backend) - added data into schema|
+| Noah Gorospe      |                                              |
+| Vicenzo Linares   |                                                 |
 
 
 
