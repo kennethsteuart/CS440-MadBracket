@@ -3,7 +3,7 @@ Welcome to MadBracket, a web application for a getting information on NCAA Divis
 The conferences in this application consist of the following ...
 
 1)SEC (Southeastern Conference)
-2)ACC
+2)ACC (Atlantic Coast Conference)
 3)Big 10
 4)Big 12
 5)Big East
@@ -65,3 +65,20 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+
+
+## Team Members & Contributions
+
+| Member            | Contributions                                                                 |
+|-------------------|------------------------------------------------------------------------------|
+| Chase Horne       | Backend Setup, Get stats, stored brackets, fixed get coaches                  |
+| Rivers Steuart    | Frontend - Basis for stored_brackets page, brackets page, full welcome page, stats page |
+| Noah Gorospe      | Backend - added data into schema                                              |
+| Vicenzo Linares   | (Please specify contributions)                                                |
+
+
+
+## Disclosure
+
+Every team member contributed and all expectations were met.
