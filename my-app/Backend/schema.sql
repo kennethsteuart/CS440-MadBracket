@@ -48,6 +48,10 @@ CREATE TABLE IF NOT EXISTS Bracket (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );    
 
+-- Indexes
+CREATE INDEX idx_team_school_name ON Team(school_name);
+CREATE INDEX idx_team_conference_id ON Team(conference_id);
+
 -- below is 100% accurate
 
 INSERT INTO Conference (conference_id, conference_name, region, founded_year, num_teams) VALUES
